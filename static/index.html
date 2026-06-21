@@ -1,846 +1,680 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Free-Dooms Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-* { margin: 0; padding: 0; box-sizing: border-box; }
-:root {
-  --bg: #0a0a0f;
-  --surface: rgba(255,255,255,0.05);
-  --surface2: rgba(255,255,255,0.08);
-  --border: rgba(255,255,255,0.1);
-  --text: #e8e8f0;
-  --text2: #8888a0;
-  --accent: #6c5ce7;
-  --accent2: #a29bfe;
-  --accent-glow: rgba(108,92,231,0.3);
-  --user-bg: rgba(108,92,231,0.15);
-  --assistant-bg: rgba(255,255,255,0.03);
-  --shadow: 0 8px 32px rgba(0,0,0,0.3);
-  --glass: rgba(255,255,255,0.05);
-  --glass-border: rgba(255,255,255,0.08);
-}
-[data-theme="light"] {
-  --bg: #f5f5fa;
-  --surface: rgba(255,255,255,0.7);
-  --surface2: rgba(255,255,255,0.9);
-  --border: rgba(0,0,0,0.1);
-  --text: #1a1a2e;
-  --text2: #6c6c8a;
-  --user-bg: rgba(108,92,231,0.1);
-  --assistant-bg: rgba(255,255,255,0.8);
-  --shadow: 0 8px 32px rgba(0,0,0,0.08);
-  --glass: rgba(255,255,255,0.6);
-  --glass-border: rgba(255,255,255,0.2);
-}
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  height: 100vh;
-  display: flex;
-  overflow: hidden;
-  transition: background .3s, color .3s;
-}
-body::before {
-  content: '';
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(ellipse at 20% 50%, rgba(108,92,231,0.08) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 20%, rgba(162,155,254,0.06) 0%, transparent 50%),
-              radial-gradient(ellipse at 50% 80%, rgba(0,0,0,0) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
-}
+  :root[data-theme="dark"]{
+    --bg-base:#0B0D1E;
+    --orb-1:#8B5CF6;
+    --orb-2:#22D3EE;
+    --orb-3:#F472B6;
+    --glass-bg:rgba(255,255,255,0.06);
+    --glass-bg-strong:rgba(255,255,255,0.10);
+    --glass-bg-soft:rgba(255,255,255,0.04);
+    --glass-border:rgba(255,255,255,0.14);
+    --text-primary:#F2F3FA;
+    --text-secondary:#9AA1C4;
+    --text-muted:#6B7299;
+    --accent-grad:linear-gradient(135deg,#8B5CF6,#22D3EE);
+    --accent-solid:#8B5CF6;
+    --user-bubble:linear-gradient(135deg, rgba(139,92,246,0.38), rgba(34,211,238,0.22));
+    --assistant-bubble:rgba(255,255,255,0.07);
+    --danger:#FB7185;
+    --success:#34D399;
+    --shadow:0 8px 32px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg-base:#EEF1FB;
+    --orb-1:#C7B8FF;
+    --orb-2:#A8E8F5;
+    --orb-3:#FBC9E4;
+    --glass-bg:rgba(255,255,255,0.55);
+    --glass-bg-strong:rgba(255,255,255,0.72);
+    --glass-bg-soft:rgba(255,255,255,0.4);
+    --glass-border:rgba(255,255,255,0.7);
+    --text-primary:#1E2140;
+    --text-secondary:#5B6088;
+    --text-muted:#8A8FB0;
+    --accent-grad:linear-gradient(135deg,#8B5CF6,#22D3EE);
+    --accent-solid:#7C3AED;
+    --user-bubble:linear-gradient(135deg, rgba(139,92,246,0.28), rgba(34,211,238,0.20));
+    --assistant-bubble:rgba(255,255,255,0.65);
+    --danger:#E11D48;
+    --success:#059669;
+    --shadow:0 8px 28px rgba(80,90,160,0.18);
+  }
 
-/* ─── Scrollbar ─── */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--bg-base);
+    color:var(--text-primary);
+    overflow:hidden;
+    transition:background .4s ease, color .4s ease;
+  }
 
-/* ─── Sidebar ─── */
-.sidebar {
-  width: 280px;
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-right: 1px solid var(--glass-border);
-  display: flex;
-  flex-direction: column;
-  padding: 20px 16px;
-  position: relative;
-  z-index: 1;
-  transition: background .3s;
-}
-.sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-.logo { font-size: 22px; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.logo-sub { font-size: 11px; color: var(--text2); margin-top: -4px; }
+  .aurora-bg{position:fixed; inset:0; overflow:hidden; z-index:0;}
+  .orb{position:absolute; border-radius:50%; filter:blur(70px); opacity:.55; will-change:transform;}
+  .orb-1{width:420px; height:420px; background:var(--orb-1); top:-10%; left:-8%; animation:float1 18s ease-in-out infinite;}
+  .orb-2{width:380px; height:380px; background:var(--orb-2); bottom:-12%; right:-6%; animation:float2 22s ease-in-out infinite;}
+  .orb-3{width:300px; height:300px; background:var(--orb-3); top:40%; left:55%; animation:float3 26s ease-in-out infinite;}
+  @keyframes float1{0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,60px)}}
+  @keyframes float2{0%,100%{transform:translate(0,0)} 50%{transform:translate(-50px,-30px)}}
+  @keyframes float3{0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,50px)}}
+  @media (prefers-reduced-motion: reduce){
+    .orb{animation:none !important;}
+  }
 
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 12px;
-  transition: all .3s;
-}
-.card:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
-.card label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: .8px; font-weight: 600; }
-.key-display {
-  background: var(--surface2);
-  border-radius: 6px;
-  padding: 8px 10px;
-  font-family: monospace;
-  font-size: 11px;
-  word-break: break-all;
-  margin: 8px 0;
-  color: var(--accent2);
-  display: none;
-  border: 1px solid var(--border);
-}
-.actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .glass{
+    background:var(--glass-bg);
+    border:1px solid var(--glass-border);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    box-shadow:var(--shadow);
+  }
 
-/* ─── Glassmorphic select ─── */
-.glass-select {
-  width: 100%;
-  background: var(--surface2);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 10px;
-  font-size: 12px;
-  font-family: inherit;
-  margin-top: 6px;
-  cursor: pointer;
-  outline: none;
-  transition: border .3s;
-  -webkit-appearance: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238888a0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 30px;
-}
-.glass-select option { background: #1a1a2e; color: #e8e8f0; }
-.glass-select:hover, .glass-select:focus { border-color: var(--accent); }
+  .app{position:relative; z-index:1; height:100vh; display:flex; flex-direction:column; max-width:880px; margin:0 auto;}
 
-/* ─── Buttons ─── */
-.btn {
-  padding: 7px 16px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-size: 12px;
-  font-family: inherit;
-  font-weight: 500;
-  transition: all .3s;
-  position: relative;
-  overflow: hidden;
-}
-.btn-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: #fff;
-  box-shadow: 0 4px 15px var(--accent-glow);
-}
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow); }
-.btn-secondary {
-  background: var(--surface2);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-.btn-secondary:hover { border-color: var(--accent); }
-.btn-icon {
-  background: none;
-  border: none;
-  color: var(--text2);
-  cursor: pointer;
-  font-size: 18px;
-  padding: 4px;
-  transition: color .3s;
-}
-.btn-icon:hover { color: var(--text); }
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    margin:14px 14px 0; padding:10px 14px; border-radius:18px;
+  }
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-logo{
+    width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    background:var(--accent-grad); font-size:16px;
+  }
+  .brand-name{font-family:'Sora',sans-serif; font-weight:700; font-size:15px; letter-spacing:.2px;}
+  .brand-sub{font-size:11px; color:var(--text-muted); font-family:'JetBrains Mono',monospace;}
 
-/* ─── Main ─── */
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  z-index: 1;
-}
-.chat-header {
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--border);
-  font-size: 13px;
-  color: var(--text2);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-.chat-header-left { display: flex; align-items: center; gap: 8px; }
-.status-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: #4ade80;
-  display: inline-block;
-  animation: pulse-dot 2s infinite;
-}
-@keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+  .topbar-right{display:flex; align-items:center; gap:8px;}
 
-.messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+  .model-select{position:relative;}
+  .model-btn{
+    display:flex; align-items:center; gap:6px; padding:8px 12px; border-radius:12px;
+    background:var(--glass-bg-soft); border:1px solid var(--glass-border); color:var(--text-primary);
+    font-size:12.5px; font-family:'Inter',sans-serif; cursor:pointer;
+  }
+  .model-btn svg{transition:transform .2s;}
+  .model-btn.open svg{transform:rotate(180deg);}
+  .model-list{
+    position:absolute; top:calc(100% + 8px); right:0; width:220px; border-radius:14px; overflow:hidden;
+    z-index:20; display:none;
+  }
+  .model-list.show{display:block;}
+  .model-item{
+    display:flex; flex-direction:column; gap:1px; padding:10px 14px; cursor:pointer; font-size:13px;
+  }
+  .model-item:hover{background:var(--glass-bg-strong);}
+  .model-item span.tag{font-size:10px; color:var(--text-muted); font-family:'JetBrains Mono',monospace;}
+  .model-item.active{background:var(--glass-bg-strong);}
 
+  .icon-btn{
+    width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    background:var(--glass-bg-soft); border:1px solid var(--glass-border); color:var(--text-primary); cursor:pointer;
+  }
+  .icon-btn:hover{background:var(--glass-bg-strong);}
 
-/* ─── Message Card with Glow ─── */
-.msg-card {
-  max-width: 720px;
-  padding: 16px 20px;
-  border-radius: 14px;
-  line-height: 1.6;
-  font-size: 14px;
-  white-space: pre-wrap;
-  position: relative;
-  animation: msg-in .3s ease-out;
-  transition: all .3s;
-}
-.msg-card.user {
-  background: var(--user-bg);
-  border: 1px solid rgba(108,92,231,0.2);
-  align-self: flex-end;
-  border-bottom-right-radius: 4px;
-}
-.msg-card.assistant {
-  background: var(--assistant-bg);
-  border: 1px solid var(--border);
-  align-self: flex-start;
-  border-bottom-left-radius: 4px;
-  box-shadow: 0 0 0 rgba(108,92,231,0);
-  transition: box-shadow .5s;
-}
-.msg-card.assistant.glowing {
-  box-shadow: 0 0 30px var(--accent-glow), inset 0 0 30px rgba(108,92,231,0.03);
-  border-color: var(--accent);
-}
-.msg-card.system {
-  background: rgba(108,92,231,0.05);
-  border: 1px solid rgba(108,92,231,0.15);
-  align-self: center;
-  font-size: 12px;
-  color: var(--text2);
-  max-width: 400px;
-  text-align: center;
-}
-@keyframes msg-in {
-  from { opacity: 0; transform: translateY(10px) scale(.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-.msg-label { font-size: 10px; color: var(--text2); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
-.msg-content { word-wrap: break-word; }
+  .status-strip{
+    margin:10px 14px 0; padding:7px 14px; border-radius:12px;
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:11.5px; color:var(--text-secondary); font-family:'JetBrains Mono',monospace;
+  }
+  .status-strip button{
+    background:none; border:none; color:var(--text-muted); font-family:'Inter',sans-serif;
+    font-size:11.5px; cursor:pointer; text-decoration:underline;
+  }
 
-/* ─── Thinking Animation ─── */
-.thinking-indicator {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 20px;
-  background: var(--assistant-bg);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  align-self: flex-start;
-  border-bottom-left-radius: 4px;
-  max-width: 200px;
-}
-.thinking-text { font-size: 12px; color: var(--text2); }
-.thinking-dots { display: flex; gap: 3px; }
-.thinking-dots span {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: bounce 1.4s infinite;
-}
-.thinking-dots span:nth-child(2) { animation-delay: .2s; }
-.thinking-dots span:nth-child(3) { animation-delay: .4s; }
-@keyframes bounce {
-  0%,80%,100% { transform: translateY(0); opacity: .4; }
-  40% { transform: translateY(-8px); opacity: 1; }
-}
+  .chat-area{flex:1; overflow-y:auto; padding:18px 14px; display:flex; flex-direction:column; gap:14px;}
+  .empty-state{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+    gap:8px; padding:0 30px; color:var(--text-secondary);
+  }
+  .empty-state .emoji{font-size:34px;}
+  .empty-state h2{font-family:'Sora',sans-serif; font-size:16px; color:var(--text-primary);}
+  .empty-state p{font-size:13px; max-width:280px;}
 
-/* ─── Running Text Animation ─── */
-.typing-text::after {
-  content: '|';
-  animation: blink .8s infinite;
-  color: var(--accent);
-}
-@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+  .msg-row{display:flex; flex-direction:column; gap:4px; max-width:80%;}
+  .msg-row.user{align-self:flex-end; align-items:flex-end;}
+  .msg-row.assistant{align-self:flex-start; align-items:flex-start;}
+  .msg-label{font-size:10px; font-family:'JetBrains Mono',monospace; color:var(--text-muted);}
+  .bubble{
+    padding:11px 15px; border-radius:16px; font-size:14px; line-height:1.55;
+    border:1px solid var(--glass-border); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    white-space:pre-wrap;
+  }
+  .msg-row.user .bubble{background:var(--user-bubble); border-top-right-radius:5px;}
+  .msg-row.assistant .bubble{background:var(--assistant-bubble); border-top-left-radius:5px;}
+  .bubble.glow{box-shadow:0 0 22px rgba(139,92,246,0.35), 0 0 4px rgba(34,211,238,0.25);}
 
-/* ─── Input Area ─── */
-.input-area {
-  padding: 16px 24px;
-  border-top: 1px solid var(--border);
-  background: var(--glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-.input-row {
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-  max-width: 720px;
-  margin: 0 auto;
-}
-.input-wrapper {
-  flex: 1;
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 8px 12px;
-  transition: all .3s;
-}
-.input-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
-textarea {
-  flex: 1;
-  background: none;
-  border: none;
-  color: var(--text);
-  font-size: 13px;
-  font-family: inherit;
-  resize: none;
-  outline: none;
-  min-height: 20px;
-  max-height: 120px;
-}
-textarea::placeholder { color: var(--text2); }
-.attach-btn, .send-btn {
-  background: none;
-  border: none;
-  color: var(--text2);
-  cursor: pointer;
-  font-size: 18px;
-  padding: 4px;
-  transition: all .3s;
-  border-radius: 6px;
-}
-.attach-btn:hover { color: var(--accent2); }
-.send-btn {
-  color: var(--accent);
-  font-size: 20px;
-  padding: 8px 12px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: #fff;
-  border-radius: 10px;
-  opacity: .6;
-}
-.send-btn.active { opacity: 1; }
-.send-btn.active:hover { transform: scale(1.05); }
+  .typing-dots{display:flex; gap:4px; padding:4px 0;}
+  .typing-dots span{width:6px; height:6px; border-radius:50%; background:var(--text-secondary); animation:blink 1.2s infinite;}
+  .typing-dots span:nth-child(2){animation-delay:.2s;}
+  .typing-dots span:nth-child(3){animation-delay:.4s;}
+  @keyframes blink{0%,80%,100%{opacity:.25} 40%{opacity:1}}
 
-/* ─── Empty State ─── */
-.empty-state {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  color: var(--text2);
-}
-.empty-logo {
-  font-size: 64px;
-  animation: float 3s ease-in-out infinite;
-}
-@keyframes float {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-.empty-state h2 { font-size: 24px; font-weight: 600; background: linear-gradient(135deg, var(--text), var(--text2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.empty-state p { font-size: 14px; }
-.feature-grid {
-  display: flex;
-  gap: 12px;
-  margin-top: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.feature-badge {
-  padding: 6px 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  font-size: 11px;
-  color: var(--text2);
-  transition: all .3s;
-}
-.feature-badge:hover { border-color: var(--accent); color: var(--accent2); }
+  .quick-chips{display:flex; gap:8px; padding:0 14px 10px; flex-wrap:wrap;}
+  .chip{
+    padding:7px 13px; border-radius:999px; font-size:12.5px; cursor:pointer;
+    background:var(--glass-bg-soft); border:1px solid var(--glass-border); color:var(--text-secondary);
+  }
+  .chip:hover{background:var(--glass-bg-strong); color:var(--text-primary);}
 
-/* ─── Modal / Settings ─── */
-.modal-overlay { 
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 100;
-  align-items: center;
-  justify-content: center;
-  animation: fade-in .2s;
-}
-.modal-overlay.open { display: flex; }
-@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-.modal {
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  padding: 28px;
-  width: 420px;
-  max-width: 90vw;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow);
-  animation: modal-in .3s ease-out;
-}
-@keyframes modal-in { from { transform: scale(.95) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-.modal h2 { font-size: 18px; margin-bottom: 16px; }
-.modal-close { float: right; background: none; border: none; color: var(--text2); cursor: pointer; font-size: 20px; }
-.setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
-.setting-row:last-child { border: none; }
-.setting-label { font-size: 13px; }
+  .input-wrap{padding:0 14px 16px;}
+  .input-bar{
+    display:flex; align-items:flex-end; gap:8px; padding:9px 9px 9px 14px; border-radius:20px;
+  }
+  .file-chip{
+    display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-secondary);
+    background:var(--glass-bg-soft); border:1px solid var(--glass-border); border-radius:999px; padding:4px 10px;
+    margin:0 0 6px 14px; width:fit-content; font-family:'JetBrains Mono',monospace;
+  }
+  .file-chip button{background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:13px;}
+  textarea#userInput{
+    flex:1; resize:none; max-height:120px; min-height:24px; background:transparent; border:none; outline:none;
+    color:var(--text-primary); font-family:'Inter',sans-serif; font-size:14px; line-height:1.5; padding:7px 0;
+  }
+  textarea#userInput::placeholder{color:var(--text-muted);}
+  .send-btn{
+    width:38px; height:38px; border-radius:50%; border:none; cursor:pointer; flex-shrink:0;
+    background:var(--accent-grad); color:#fff; display:flex; align-items:center; justify-content:center;
+  }
+  .send-btn:disabled{opacity:.4; cursor:not-allowed;}
+  .attach-btn{
+    width:34px; height:34px; border-radius:50%; border:none; cursor:pointer; flex-shrink:0; background:transparent;
+    color:var(--text-secondary); display:flex; align-items:center; justify-content:center;
+  }
+  .attach-btn:hover{color:var(--text-primary);}
 
-/* Toggle Switch */
-.toggle {
-  position: relative;
-  width: 44px; height: 24px;
-  cursor: pointer;
-}
-.toggle input { display: none; }
-.toggle-slider {
-  position: absolute;
-  inset: 0;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  transition: .3s;
-}
-.toggle-slider::before {
-  content: '';
-  position: absolute;
-  width: 18px; height: 18px;
-  left: 2px; bottom: 2px;
-  background: var(--text2);
-  border-radius: 50%;
-  transition: .3s;
-}
-.toggle input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
-.toggle input:checked + .toggle-slider::before { transform: translateX(20px); background: #fff; }
+  .footer-note{
+    text-align:center; font-size:11px; color:var(--text-muted); padding-bottom:10px;
+  }
+  .footer-note a{color:var(--text-secondary); text-decoration:none;}
 
-/* Upload preview */
-.file-preview {
-  display: none;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 11px;
-  color: var(--text2);
-  margin-bottom: 4px;
-  max-width: 300px;
-}
-.file-preview.show { display: flex; }
-.file-preview .remove-file { cursor: pointer; color: #ff6b6b; }
+  .overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.35); opacity:0; pointer-events:none;
+    transition:opacity .25s ease; z-index:30;
+  }
+  .overlay.show{opacity:1; pointer-events:auto;}
+  .settings-panel{
+    position:fixed; top:0; right:0; height:100%; width:320px; max-width:88vw; z-index:31;
+    transform:translateX(100%); transition:transform .3s ease;
+    border-radius:0; border-left:1px solid var(--glass-border);
+    padding:18px; overflow-y:auto;
+  }
+  .settings-panel.show{transform:translateX(0);}
+  .settings-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+  .settings-head h3{font-family:'Sora',sans-serif; font-size:15px;}
+  .settings-group{margin-bottom:20px;}
+  .settings-group > label.group-title{
+    display:block; font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-muted);
+    margin-bottom:10px; font-family:'JetBrains Mono',monospace;
+  }
+  .toggle-row{display:flex; align-items:center; justify-content:space-between; padding:9px 0; font-size:13.5px;}
+  .switch{position:relative; width:42px; height:24px; flex-shrink:0;}
+  .switch input{opacity:0; width:0; height:0;}
+  .slider{
+    position:absolute; inset:0; background:var(--glass-bg-strong); border:1px solid var(--glass-border);
+    border-radius:999px; cursor:pointer; transition:.2s;
+  }
+  .slider:before{
+    content:""; position:absolute; width:18px; height:18px; left:2px; top:2px; border-radius:50%;
+    background:var(--text-secondary); transition:.2s;
+  }
+  .switch input:checked + .slider{background:var(--accent-grad); border-color:transparent;}
+  .switch input:checked + .slider:before{transform:translateX(18px); background:#fff;}
 
-/* Mobile */
-@media (max-width: 768px) {
-  .sidebar { width: 100%; max-height: 180px; overflow-y: auto; padding: 12px; }
-  body { flex-direction: column; }
-  .main { max-width: 100vw; }
-  .modal { width: 95vw; padding: 20px; }
-}
+  .segmented{display:flex; gap:6px; flex-wrap:wrap;}
+  .seg-btn{
+    flex:1; min-width:60px; text-align:center; padding:7px 0; border-radius:10px; font-size:12px; cursor:pointer;
+    background:var(--glass-bg-soft); border:1px solid var(--glass-border); color:var(--text-secondary);
+    font-family:'JetBrains Mono',monospace;
+  }
+  .seg-btn.active{background:var(--accent-grad); color:#fff; border-color:transparent;}
+
+  .key-box{
+    display:flex; gap:6px; align-items:center; background:var(--glass-bg-soft); border:1px solid var(--glass-border);
+    border-radius:10px; padding:8px 10px; margin-bottom:8px;
+  }
+  .key-box input{
+    flex:1; background:transparent; border:none; outline:none; color:var(--text-primary);
+    font-family:'JetBrains Mono',monospace; font-size:11.5px;
+  }
+  .key-box button{background:none; border:none; color:var(--text-secondary); cursor:pointer;}
+  .btn-full{
+    width:100%; padding:9px 0; border-radius:10px; border:none; cursor:pointer;
+    background:var(--accent-grad); color:#fff; font-size:13px; font-weight:600; font-family:'Inter',sans-serif;
+  }
+  .btn-outline{
+    width:100%; padding:9px 0; border-radius:10px; cursor:pointer; margin-top:8px;
+    background:transparent; border:1px solid var(--glass-border); color:var(--text-secondary); font-size:13px;
+  }
+  .upload-zone{
+    border:1.5px dashed var(--glass-border); border-radius:12px; padding:16px; text-align:center;
+    font-size:12px; color:var(--text-muted); cursor:pointer;
+  }
+  .upload-zone:hover{border-color:var(--accent-solid); color:var(--text-secondary);}
+
+  @media (max-width:560px){
+    .topbar{margin:8px 8px 0;}
+    .brand-sub{display:none;}
+    .settings-panel{width:100%; max-width:100%;}
+    .msg-row{max-width:90%;}
+  }
 </style>
 </head>
 <body>
 
-<!-- ─── Settings Modal ─── -->
-<div class="modal-overlay" id="settingsModal">
-  <div class="modal">
-    <button class="modal-close" onclick="toggleSettings()">✕</button>
-    <h2>⚙️ Settings</h2>
-    <div class="setting-row">
-      <span class="setting-label">Dark Mode</span>
-      <label class="toggle"><input type="checkbox" id="darkToggle" checked onchange="toggleTheme()"><span class="toggle-slider"></span></label>
-    </div>
-    <div class="setting-row">
-      <span class="setting-label">Message Glow Effect</span>
-      <label class="toggle"><input type="checkbox" id="glowToggle" checked><span class="toggle-slider"></span></label>
-    </div>
-    <div class="setting-row">
-      <span class="setting-label">Typing Animation</span>
-      <label class="toggle"><input type="checkbox" id="typingToggle" checked><span class="toggle-slider"></span></label>
-    </div>
-    <div class="setting-row">
-      <span class="setting-label">Max Tokens</span>
-      <select id="maxTokensSelect" class="glass-select" style="width:100px">
-        <option value="512">512</option>
-        <option value="1024" selected>1024</option>
-        <option value="2048">2048</option>
-        <option value="4096">4096</option>
-      </select>
-    </div>
-  </div>
+<div class="aurora-bg">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
 </div>
 
-<!-- ─── Sidebar ─── -->
-<div class="sidebar">
-  <div class="sidebar-header">
-    <div><div class="logo">Free-Dooms</div><div class="logo-sub">Agent</div></div>
-    <button class="btn-icon" onclick="toggleSettings()" title="Settings">⚙️</button>
-  </div>
+<div class="app">
 
-  <div class="card">
-    <label>🔑 API Key</label>
-    <div id="keyDisplay" class="key-display"></div>
-    <div class="actions">
-      <button class="btn btn-primary" onclick="generateKey()">Generate</button>
-      <button id="copyBtn" class="btn btn-secondary" onclick="copyKey()" style="display:none">Copy</button>
+  <header class="topbar glass">
+    <div class="brand">
+      <div class="brand-logo">🌀</div>
+      <div>
+        <div class="brand-name">Free-Dooms Agent</div>
+        <div class="brand-sub" id="statusBadge">STATUS: ONLINE</div>
+      </div>
     </div>
-  </div>
-
-  <div class="card">
-    <label>🧠 Model</label>
-    <select id="modelSelect" class="glass-select">
-      <option value="Meta-Llama-3.1-405B-Instruct">Llama 3.1 405B (best)</option>
-      <option value="gpt-oss-120b">gpt-oss-120b (reasoning)</option>
-      <option value="gpt-4o">GPT-4o</option>
-      <option value="gpt-4o-mini">GPT-4o Mini</option>
-    </select>
-  </div>
-
-  <div class="card">
-    <label>📁 Upload File</label>
-    <input type="file" id="fileInput" style="display:none" onchange="handleFile(this)">
-    <div class="actions" style="margin-top:6px">
-      <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">Choose File</button>
-      <span id="fileName" style="font-size:11px;color:var(--text2);align-self:center"></span>
+    <div class="topbar-right">
+      <div class="model-select">
+        <button class="model-btn" id="modelBtn">
+          <span id="modelLabel">Llama 3.1 405B</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="model-list glass" id="modelList">
+          <div class="model-item active" data-model="Meta-Llama-3.1-405B-Instruct" data-label="Llama 3.1 405B">
+            <span>Llama 3.1 405B</span><span class="tag">paling pintar</span>
+          </div>
+          <div class="model-item" data-model="gpt-oss-120b" data-label="gpt-oss-120b">
+            <span>gpt-oss-120b</span><span class="tag">reasoning</span>
+          </div>
+          <div class="model-item" data-model="gpt-4o" data-label="GPT-4o">
+            <span>GPT-4o</span><span class="tag">seimbang</span>
+          </div>
+          <div class="model-item" data-model="gpt-4o-mini" data-label="GPT-4o Mini">
+            <span>GPT-4o Mini</span><span class="tag">tercepat</span>
+          </div>
+        </div>
+      </div>
+      <button class="icon-btn" id="settingsBtn" title="Pengaturan">⚙️</button>
     </div>
+  </header>
+
+  <div class="status-strip glass">
+    <span id="tokenCounter">0 token digunakan</span>
+    <button id="clearBtn">Bersihkan</button>
   </div>
 
-  <div style="margin-top:auto;font-size:10px;color:var(--text2);text-align:center;padding-top:12px">
-    <a href="https://github.com/dacdoyx/Free-Dooms_Agent" target="_blank" style="color:var(--accent2);text-decoration:none">GitHub</a> · Free · No tokens
-  </div>
-</div>
-
-<!-- ─── Chat ─── -->
-<div class="main">
-  <div class="chat-header">
-    <div class="chat-header-left">
-      <span class="status-dot"></span>
-      <span id="modelDisplay">gpt-oss-120b</span> · <span id="tokenDisplay">0</span> tokens used
-    </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button class="btn btn-secondary" onclick="clearChat()" style="font-size:11px">Clear</button>
-      <span style="font-size:11px;color:var(--text2)" id="keyStatus">No key</span>
-    </div>
-  </div>
-
-  <div class="messages" id="messages">
+  <main class="chat-area" id="chatArea">
     <div class="empty-state" id="emptyState">
-      <div class="empty-logo">🌀</div>
+      <div class="emoji">🌀</div>
       <h2>Free-Dooms Agent</h2>
-      <p>Generate an API key and start chatting. No cost. No limits.</p>
-      <div class="feature-grid">
-        <span class="feature-badge">🚀 gpt-oss-120b</span>
-        <span class="feature-badge">💻 Coding</span>
-        <span class="feature-badge">🧠 Reasoning</span>
-        <span class="feature-badge">🎨 Design</span>
-      </div>
+      <p>Generate API key lalu mulai chat. Gratis. Tanpa batas.</p>
+    </div>
+  </main>
+
+  <div class="quick-chips">
+    <div class="chip" data-prompt="Bantu saya debug kode ini: ">💻 Coding</div>
+    <div class="chip" data-prompt="Tolong analisis langkah demi langkah: ">🧠 Reasoning</div>
+    <div class="chip" data-prompt="Buatkan ide desain untuk: ">🎨 Design</div>
+  </div>
+
+  <div class="input-wrap">
+    <div class="file-chip" id="fileChip" style="display:none;">
+      📎 <span id="fileName"></span> <button id="removeFile">✕</button>
+    </div>
+    <div class="input-bar glass">
+      <button class="attach-btn" id="attachBtn" title="Lampirkan file">📎</button>
+      <input type="file" id="fileInput" style="display:none;">
+      <textarea id="userInput" placeholder="Tulis pesan..." rows="1"></textarea>
+      <button class="send-btn" id="sendBtn" disabled>➤</button>
     </div>
   </div>
 
-  <div class="input-area">
-    <div id="filePreview" class="file-preview">
-      <span>📎 <span id="fileNameDisplay"></span></span>
-      <span class="remove-file" onclick="removeFile()">✕</span>
-    </div>
-    <div class="input-row">
-      <div class="input-wrapper">
-        <button class="attach-btn" onclick="document.getElementById('fileInput').click()" title="Attach file">📎</button>
-        <textarea id="input" rows="1" placeholder="Type a message..." onkeydown="handleKey(event)"></textarea>
-      </div>
-      <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
-    </div>
+  <div class="footer-note">
+    Gratis · Tanpa biaya tersembunyi · <a href="https://github.com/dacdoyx/Free-Dooms_Agent" target="_blank">GitHub</a>
   </div>
 </div>
+
+<div class="overlay" id="overlay"></div>
+<aside class="settings-panel glass" id="settingsPanel">
+  <div class="settings-head">
+    <h3>Pengaturan</h3>
+    <button class="icon-btn" id="closeSettings">✕</button>
+  </div>
+
+  <div class="settings-group">
+    <label class="group-title">Tampilan</label>
+    <div class="toggle-row">
+      <span>Mode Gelap</span>
+      <label class="switch"><input type="checkbox" id="darkToggle" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span>Efek Glow Pesan</span>
+      <label class="switch"><input type="checkbox" id="glowToggle" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span>Animasi Mengetik</span>
+      <label class="switch"><input type="checkbox" id="typingToggle" checked><span class="slider"></span></label>
+    </div>
+  </div>
+
+  <div class="settings-group">
+    <label class="group-title">Maksimum Token</label>
+    <div class="segmented" id="tokenSeg">
+      <div class="seg-btn" data-val="512">512</div>
+      <div class="seg-btn active" data-val="1024">1024</div>
+      <div class="seg-btn" data-val="2048">2048</div>
+      <div class="seg-btn" data-val="4096">4096</div>
+    </div>
+  </div>
+
+  <div class="settings-group">
+    <label class="group-title">API Key</label>
+    <div class="key-box">
+      <input type="text" id="apiKeyField" placeholder="Generate key dulu" readonly>
+      <button id="copyKeyBtn" title="Copy">⧉</button>
+    </div>
+    <button class="btn-full" id="genKeyBtn">Generate Key</button>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:6px" id="keyStatus"></div>
+  </div>
+
+  <div class="settings-group">
+    <label class="group-title">Upload File</label>
+    <div class="upload-zone" id="uploadZone">Ketuk untuk pilih file</div>
+  </div>
+</aside>
 
 <script>
-let API_KEY = localStorage.getItem('freeDoomsKey') || '';
-let fileData = null;
-const API_BASE = window.location.origin;
+  // ─── Backend API base ───
+  const API_BASE = window.location.origin;
 
-const keyDisplay = document.getElementById('keyDisplay');
-const copyBtn = document.getElementById('copyBtn');
-const messagesEl = document.getElementById('messages');
-const emptyState = document.getElementById('emptyState');
-const input = document.getElementById('input');
-const sendBtn = document.getElementById('sendBtn');
-const keyStatus = document.getElementById('keyStatus');
-const modelDisplay = document.getElementById('modelDisplay');
-const tokenDisplay = document.getElementById('tokenDisplay');
-const modelSelect = document.getElementById('modelSelect');
+  // ─── Model mapping ───
+  const MODEL_MAP = {
+    "Meta-Llama-3.1-405B-Instruct": "Llama 3.1 405B",
+    "gpt-oss-120b": "gpt-oss-120b",
+    "gpt-4o": "GPT-4o",
+    "gpt-4o-mini": "GPT-4o Mini"
+  };
 
-let tokenCount = parseInt(localStorage.getItem('tokenCount') || '0');
-tokenDisplay.textContent = tokenCount;
+  // ─── State ───
+  let selectedModel = "Meta-Llama-3.1-405B-Instruct";
+  let totalTokens = parseInt(localStorage.getItem('fdTokens') || '0');
+  let attachedFile = null;
+  let apiKey = localStorage.getItem('fdKey') || '';
 
-if (API_KEY) {
-  keyDisplay.textContent = API_KEY;
-  keyDisplay.style.display = 'block';
-  copyBtn.style.display = 'inline-block';
-  keyStatus.textContent = 'Key ready';
-}
+  const $ = id => document.getElementById(id);
+  const chatArea = $('chatArea');
+  const emptyState = $('emptyState');
+  const userInput = $('userInput');
+  const sendBtn = $('sendBtn');
 
-modelSelect.addEventListener('change', () => {
-  modelDisplay.textContent = modelSelect.value;
-});
-
-// Auto-resize textarea
-input.addEventListener('input', () => {
-  input.style.height = 'auto';
-  input.style.height = Math.min(input.scrollHeight, 120) + 'px';
-  sendBtn.classList.toggle('active', input.value.trim().length > 0);
-});
-
-// ─── API Key ───
-async function generateKey() {
-  try {
-    const res = await fetch(`${API_BASE}/v1/api-keys/generate`, { method: 'POST' });
-    const data = await res.json();
-    API_KEY = data.id;
-    localStorage.setItem('freeDoomsKey', API_KEY);
-    keyDisplay.textContent = API_KEY;
-    keyDisplay.style.display = 'block';
-    copyBtn.style.display = 'inline-block';
-    keyStatus.textContent = 'Key ready';
-    addSystemMsg('🔑 New API key generated!');
-  } catch (e) {
-    addSystemMsg('❌ Failed to generate key');
-  }
-}
-
-function copyKey() {
-  navigator.clipboard.writeText(API_KEY);
-  copyBtn.textContent = 'Copied!';
-  setTimeout(() => copyBtn.textContent = 'Copy', 1500);
-}
-
-// ─── File Upload ───
-function handleFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  document.getElementById('fileNameDisplay').textContent = file.name;
-  document.getElementById('fileName').textContent = file.name;
-  document.getElementById('filePreview').classList.add('show');
-  const reader = new FileReader();
-  reader.onload = () => { fileData = { name: file.name, content: reader.result }; };
-  reader.readAsDataURL(file);
-}
-
-function removeFile() {
-  fileData = null;
-  document.getElementById('fileInput').value = '';
-  document.getElementById('filePreview').classList.remove('show');
-  document.getElementById('fileNameDisplay').textContent = '';
-  document.getElementById('fileName').textContent = '';
-}
-
-// ─── Settings ───
-function toggleSettings() {
-  document.getElementById('settingsModal').classList.toggle('open');
-}
-
-function toggleTheme() {
-  const dark = document.getElementById('darkToggle').checked;
-  document.documentElement.setAttribute('data-theme', dark ? '' : 'light');
-  localStorage.setItem('theme', dark ? 'dark' : 'light');
-}
-
-// Load saved theme
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme === 'light') {
-  document.getElementById('darkToggle').checked = false;
-  document.documentElement.setAttribute('data-theme', 'light');
-}
-
-// ─── Chat ───
-async function sendMessage() {
-  const text = input.value.trim();
-  if ((!text && !fileData) || !API_KEY) {
-    if (!API_KEY) addSystemMsg('🔑 Generate an API key first');
-    return;
+  $('tokenCounter').textContent = totalTokens + ' token digunakan';
+  if (apiKey) {
+    $('apiKeyField').value = apiKey;
+    $('keyStatus').textContent = 'Key siap';
+    $('brand-sub') && ($('brand-sub').textContent = 'KEY: AKTIF');
   }
 
-  let content = text;
-  if (fileData) {
-    content = text ? `${text}\n\n[File: ${fileData.name}]\n${fileData.content}` : `[File: ${fileData.name}]\n${fileData.content}`;
-    removeFile();
-  }
-
-  addMessage('user', content);
-  input.value = '';
-  input.style.height = 'auto';
-  sendBtn.classList.remove('active');
-
-  showThinking();
-
-  const msgs = [...document.querySelectorAll('.msg-card.user, .msg-card.assistant')].map(el => ({
-    role: el.dataset.role,
-    content: el.dataset.content
-  }));
-
-  const model = modelSelect.value;
-  const maxTokens = parseInt(document.getElementById('maxTokensSelect').value);
-
-  try {
-    const res = await fetch(`${API_BASE}/v1/chat/completions`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
-      body: JSON.stringify({ model, messages: msgs, max_tokens: maxTokens })
+  // ─── Dropdown Model ───
+  const modelBtn = $('modelBtn');
+  const modelList = $('modelList');
+  modelBtn.addEventListener('click', () => {
+    modelList.classList.toggle('show');
+    modelBtn.classList.toggle('open');
+  });
+  document.querySelectorAll('.model-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.model-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+      selectedModel = item.dataset.model;
+      $('modelLabel').textContent = item.dataset.label;
+      modelList.classList.remove('show');
+      modelBtn.classList.remove('open');
     });
-    removeThinking();
-    const data = await res.json();
-    if (data.choices) {
-      const responseText = data.choices[0].message.content;
-      if (document.getElementById('typingToggle').checked) {
-        typeMessage(responseText);
-      } else {
-        addMessage('assistant', responseText);
-      }
-      tokenCount += responseText.length;
-      tokenDisplay.textContent = tokenCount;
-      localStorage.setItem('tokenCount', tokenCount.toString());
-    } else {
-      addSystemMsg('❌ ' + (data.detail?.error || 'Unknown error'));
+  });
+  document.addEventListener('click', (e) => {
+    if (!modelBtn.contains(e.target) && !modelList.contains(e.target)) {
+      modelList.classList.remove('show');
+      modelBtn.classList.remove('open');
     }
-  } catch (e) {
-    removeThinking();
-    addSystemMsg('❌ Network error');
+  });
+
+  // ─── Settings Panel ───
+  const settingsPanel = $('settingsPanel');
+  const overlay = $('overlay');
+  function openSettings(){ settingsPanel.classList.add('show'); overlay.classList.add('show'); }
+  function closeSettingsFn(){ settingsPanel.classList.remove('show'); overlay.classList.remove('show'); }
+  $('settingsBtn').addEventListener('click', openSettings);
+  $('closeSettings').addEventListener('click', closeSettingsFn);
+  overlay.addEventListener('click', closeSettingsFn);
+
+  $('darkToggle').addEventListener('change', (e) => {
+    document.documentElement.setAttribute('data-theme', e.target.checked ? 'dark' : 'light');
+    localStorage.setItem('fdTheme', e.target.checked ? 'dark' : 'light');
+  });
+  const savedTheme = localStorage.getItem('fdTheme');
+  if (savedTheme === 'light') {
+    $('darkToggle').checked = false;
+    document.documentElement.setAttribute('data-theme', 'light');
   }
-}
 
-// ─── Thinking Animation ───
-function showThinking() {
-  document.getElementById('emptyState')?.remove();
-  const div = document.createElement('div');
-  div.className = 'thinking-indicator';
-  div.id = 'thinkingIndicator';
-  div.innerHTML = '<div class="thinking-text">Thinking</div><div class="thinking-dots"><span></span><span></span><span></span></div>';
-  messagesEl.appendChild(div);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-}
+  document.querySelectorAll('#tokenSeg .seg-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#tokenSeg .seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
 
-function removeThinking() {
-  document.getElementById('thinkingIndicator')?.remove();
-}
+  // ─── API Key ───
+  $('genKeyBtn').addEventListener('click', async () => {
+    try {
+      const res = await fetch(`${API_BASE}/v1/api-keys/generate`, { method: 'POST' });
+      const data = await res.json();
+      apiKey = data.id;
+      localStorage.setItem('fdKey', apiKey);
+      $('apiKeyField').value = apiKey;
+      $('keyStatus').textContent = '✅ Key aktif!';
+      $('statusBadge').textContent = 'KEY: AKTIF';
+      closeSettingsFn();
+    } catch (e) {
+      $('keyStatus').textContent = '❌ Gagal generate key';
+    }
+  });
+  $('copyKeyBtn').addEventListener('click', () => {
+    if (!apiKey) return;
+    navigator.clipboard.writeText(apiKey);
+    $('copyKeyBtn').textContent = '✓';
+    setTimeout(() => $('copyKeyBtn').textContent = '⧉', 1200);
+  });
 
-// ─── Typing Animation ───
-function typeMessage(text) {
-  const div = document.createElement('div');
-  div.className = 'msg-card assistant glowing';
-  div.dataset.role = 'assistant';
-  div.dataset.content = text;
-  const label = document.createElement('div');
-  label.className = 'msg-label';
-  label.textContent = 'Free-Dooms';
-  div.appendChild(label);
-  const content = document.createElement('div');
-  content.className = 'msg-content typing-text';
-  content.id = 'typingContent';
-  div.appendChild(content);
-  messagesEl.appendChild(div);
+  // ─── File Upload ───
+  $('uploadZone').addEventListener('click', () => $('fileInput').click());
+  $('attachBtn').addEventListener('click', () => $('fileInput').click());
+  $('fileInput').addEventListener('change', (e) => {
+    if (e.target.files.length) {
+      attachedFile = e.target.files[0];
+      $('fileName').textContent = attachedFile.name;
+      $('fileChip').style.display = 'flex';
+      closeSettingsFn();
+    }
+  });
+  $('removeFile').addEventListener('click', () => {
+    attachedFile = null;
+    $('fileChip').style.display = 'none';
+    $('fileInput').value = '';
+  });
 
-  let i = 0;
-  function type() {
-    if (i < text.length) {
-      content.textContent += text[i];
+  // ─── Quick Chips ───
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      userInput.value = chip.dataset.prompt;
+      userInput.focus();
+      handleInputResize();
+      updateSendState();
+    });
+  });
+
+  // ─── Textarea ───
+  function handleInputResize(){
+    userInput.style.height = 'auto';
+    userInput.style.height = Math.min(userInput.scrollHeight, 120) + 'px';
+  }
+  function updateSendState(){
+    sendBtn.disabled = userInput.value.trim().length === 0;
+  }
+  userInput.addEventListener('input', () => { handleInputResize(); updateSendState(); });
+  userInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+  sendBtn.addEventListener('click', sendMessage);
+
+  // ─── Messages ───
+  function addMessage(role, text){
+    if (emptyState) emptyState.remove();
+    const row = document.createElement('div');
+    row.className = 'msg-row ' + role;
+    const label = document.createElement('div');
+    label.className = 'msg-label';
+    label.textContent = role === 'user' ? 'ANDA' : selectedModel;
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble' + ($('glowToggle').checked && role === 'assistant' ? ' glow' : '');
+    bubble.textContent = text;
+    row.appendChild(label);
+    row.appendChild(bubble);
+    chatArea.appendChild(row);
+    chatArea.scrollTop = chatArea.scrollHeight;
+    return bubble;
+  }
+
+  function showTyping(){
+    const row = document.createElement('div');
+    row.className = 'msg-row assistant';
+    row.id = 'typingRow';
+    const dots = document.createElement('div');
+    dots.className = 'bubble typing-dots';
+    dots.innerHTML = '<span></span><span></span><span></span>';
+    row.appendChild(dots);
+    chatArea.appendChild(row);
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
+  function removeTyping(){
+    const row = $('typingRow');
+    if (row) row.remove();
+  }
+
+  function typeWriter(bubble, text, speed = 14){
+    let i = 0;
+    bubble.textContent = '';
+    const interval = setInterval(() => {
+      bubble.textContent += text[i];
+      chatArea.scrollTop = chatArea.scrollHeight;
       i++;
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-      setTimeout(type, Math.random() * 20 + 5);
-    } else {
-      content.className = 'msg-content';
-      // Remove glow after typing
-      if (!document.getElementById('glowToggle').checked) {
-        div.classList.remove('glowing');
+      if (i >= text.length) clearInterval(interval);
+    }, speed);
+  }
+
+  // ─── Send Message ───
+  async function sendMessage(){
+    const text = userInput.value.trim();
+    if (!text) return;
+    if (!apiKey) {
+      addMessage('system', '🔑 Generate API key dulu di menu Settings');
+      return;
+    }
+
+    // Build content with optional file
+    let content = text;
+    if (attachedFile) {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const fileData = reader.result.split(',')[1]; // base64
+        content = text + `\n\n[File: ${attachedFile.name}]\n${fileData}`;
+        await sendToBackend(content);
+      };
+      reader.readAsDataURL(attachedFile);
+      $('fileChip').style.display = 'none';
+      attachedFile = null;
+      $('fileInput').value = '';
+      return; // will continue in reader.onload
+    }
+    await sendToBackend(content);
+  }
+
+  async function sendToBackend(content){
+    addMessage('user', content);
+    userInput.value = '';
+    handleInputResize();
+    updateSendState();
+
+    // Get max tokens from settings
+    let maxTokens = 1024;
+    document.querySelectorAll('#tokenSeg .seg-btn').forEach(b => {
+      if (b.classList.contains('active')) maxTokens = parseInt(b.dataset.val);
+    });
+
+    // Build conversation from existing messages
+    const msgs = [];
+    document.querySelectorAll('.msg-row.user, .msg-row.assistant').forEach(row => {
+      const role = row.classList.contains('user') ? 'user' : 'assistant';
+      const bubble = row.querySelector('.bubble');
+      if (bubble) msgs.push({ role, content: bubble.textContent });
+    });
+
+    showTyping();
+    try {
+      const res = await fetch(`${API_BASE}/v1/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+        body: JSON.stringify({ model: selectedModel, messages: msgs, max_tokens: maxTokens })
+      });
+      removeTyping();
+      const data = await res.json();
+      if (data.choices && data.choices[0]) {
+        const reply = data.choices[0].message.content;
+        const bubble = addMessage('assistant', '');
+        totalTokens += Math.ceil(reply.length / 4);
+        $('tokenCounter').textContent = totalTokens + ' token digunakan';
+        localStorage.setItem('fdTokens', totalTokens);
+
+        if ($('typingToggle').checked) {
+          typeWriter(bubble, reply);
+        } else {
+          bubble.textContent = reply;
+        }
+      } else {
+        addMessage('system', '❌ ' + (data.detail?.error || 'Error dari backend'));
       }
+    } catch (e) {
+      removeTyping();
+      addMessage('system', '❌ Network error. Cek koneksi.');
     }
   }
-  type();
-}
 
-// ─── Add Message ───
-function addMessage(role, content) {
-  document.getElementById('emptyState')?.remove();
-  document.getElementById('typingContent')?.parentElement?.classList.remove('glowing');
-
-  const div = document.createElement('div');
-  div.className = `msg-card ${role}`;
-  if (role === 'assistant') div.classList.add('glowing');
-  div.dataset.role = role;
-  div.dataset.content = content;
-
-  const label = document.createElement('div');
-  label.className = 'msg-label';
-  label.textContent = role === 'user' ? 'You' : 'Free-Dooms';
-  div.appendChild(label);
-  const contentDiv = document.createElement('div');
-  contentDiv.className = 'msg-content';
-  contentDiv.textContent = content;
-  div.appendChild(contentDiv);
-
-  messagesEl.appendChild(div);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-
-  // Remove glow after animation if disabled
-  if (role === 'assistant' && !document.getElementById('glowToggle').checked) {
-    setTimeout(() => div.classList.remove('glowing'), 1500);
-  }
-}
-
-function addSystemMsg(text) {
-  document.getElementById('emptyState')?.remove();
-  const div = document.createElement('div');
-  div.className = 'msg-card system';
-  div.textContent = text;
-  messagesEl.appendChild(div);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-}
-
-function clearChat() {
-  messagesEl.innerHTML = '';
-  messagesEl.appendChild(emptyState);
-  emptyState.style.display = 'flex';
-}
-
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-}
+  // ─── Clear Chat ───
+  $('clearBtn').addEventListener('click', () => {
+    chatArea.innerHTML = '';
+    const fresh = document.createElement('div');
+    fresh.className = 'empty-state';
+    fresh.id = 'emptyState';
+    fresh.innerHTML = '<div class="emoji">🌀</div><h2>Free-Dooms Agent</h2><p>Generate API key lalu mulai chat. Gratis. Tanpa batas.</p>';
+    chatArea.appendChild(fresh);
+    totalTokens = 0;
+    $('tokenCounter').textContent = '0 token digunakan';
+    localStorage.setItem('fdTokens', '0');
+  });
 </script>
 </body>
 </html>
