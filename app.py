@@ -8,11 +8,11 @@ from typing import List, Optional
 
 VALID_KEYS = {}
 
-CEREBRAS_KEY = os.environ.get("CEREBRAS_KEY", "csk-j3rv4vxj84h6ftk2x64vtx8xenhtwntf68tde4k9dejwredf")
+CEREBRAS_KEY = os.environ.get("CEREBRAS_KEY", "")
 CEREBRAS_MODEL = "gpt-oss-120b"
 CEREBRAS_BASE = "https://api.cerebras.ai/v1"
 
-GH_TOKEN = os.environ.get("GH_MODELS_TOKEN", "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")
+GH_TOKEN = os.environ.get("GH_MODELS_TOKEN", "")
 GH_BASE = "https://models.inference.ai.azure.com"
 
 AVAILABLE_MODELS = [
