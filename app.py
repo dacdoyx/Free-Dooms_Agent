@@ -7,7 +7,7 @@ from typing import List, Optional
 VALID_KEYS = {}
 BACKENDS = []
 
-GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "AQ.Ab8RN6KJpCXQmxKeomCw52w8PIqCY664EjWkZqUElEfoB7Epvg")
 GH_MODELS_TOKEN = os.environ.get("GH_MODELS_TOKEN", "")
 
 app = FastAPI(title="free-dooms_ddkdkdketc")
@@ -129,7 +129,7 @@ async def chat_completions(req: ChatRequest, authorization: Optional[str] = Head
                 "choices": [{"index": 0, "message": {"role": "assistant", "content": text.strip()}, "finish_reason": "stop"}],
                 "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
             }
-    raise HTTPException(503, {"error": "all backends exhausted. set GEMINI_API_KEY env var."})
+    raise HTTPException(503, {"error": "all backends exhausted."})
 
 if __name__ == "__main__":
     print("╔══════════════════════════════════════════════╗")
