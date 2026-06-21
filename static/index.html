@@ -201,11 +201,7 @@ body::before {
   flex-direction: column;
   gap: 16px;
 }
-.main.empty .messages {
-  justify-content: center;
-  align-items: center;
-  padding-bottom: 60px;
-}
+
 
 /* ─── Message Card with Glow ─── */
 .msg-card {
@@ -684,8 +680,6 @@ function toggleTheme() {
 }
 
 // Load saved theme
-document.querySelector('.main')?.classList.add('empty');
-
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme === 'light') {
   document.getElementById('darkToggle').checked = false;
@@ -750,7 +744,6 @@ async function sendMessage() {
 
 // ─── Thinking Animation ───
 function showThinking() {
-  document.querySelector('.main')?.classList.remove('empty');
   document.getElementById('emptyState')?.remove();
   const div = document.createElement('div');
   div.className = 'thinking-indicator';
@@ -800,7 +793,6 @@ function typeMessage(text) {
 
 // ─── Add Message ───
 function addMessage(role, content) {
-  document.querySelector('.main')?.classList.remove('empty');
   document.getElementById('emptyState')?.remove();
   document.getElementById('typingContent')?.parentElement?.classList.remove('glowing');
 
@@ -829,7 +821,6 @@ function addMessage(role, content) {
 }
 
 function addSystemMsg(text) {
-  document.querySelector('.main')?.classList.remove('empty');
   document.getElementById('emptyState')?.remove();
   const div = document.createElement('div');
   div.className = 'msg-card system';
@@ -842,7 +833,6 @@ function clearChat() {
   messagesEl.innerHTML = '';
   messagesEl.appendChild(emptyState);
   emptyState.style.display = 'flex';
-  document.querySelector('.main')?.classList.add('empty');
 }
 
 function handleKey(e) {
