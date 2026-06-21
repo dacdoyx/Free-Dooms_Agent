@@ -1,5 +1,7 @@
 import secrets, time, os, httpx
 from fastapi import FastAPI, HTTPException, Header
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import uvicorn
 from typing import List, Optional
@@ -11,6 +13,11 @@ GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "AQ.Ab8RN6KJpCXQmxKeomCw52w8PIqCY6
 GH_MODELS_TOKEN = os.environ.get("GH_MODELS_TOKEN", "")
 
 app = FastAPI(title="free-dooms_ddkdkdketc")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/")
+async def root():
+    return FileResponse("static/index.html")
 
 class Message(BaseModel):
     role: str
