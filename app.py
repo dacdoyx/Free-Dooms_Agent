@@ -8,10 +8,17 @@ from typing import List, Optional
 
 VALID_KEYS = {}
 
+CEREBRAS_KEY = os.environ.get("CEREBRAS_KEY", "csk-j3rv4vxj84h6ftk2x64vtx8xenhtwntf68tde4k9dejwredf")
+CEREBRAS_MODEL = "gpt-oss-120b"
+CEREBRAS_BASE = "https://api.cerebras.ai/v1"
+
 GH_TOKEN = os.environ.get("GH_MODELS_TOKEN", "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")
-GH_MODEL = "Meta-Llama-3.1-405B-Instruct"
 GH_BASE = "https://models.inference.ai.azure.com"
-AVAILABLE_MODELS = ["Meta-Llama-3.1-405B-Instruct", "gpt-4o", "Meta-Llama-3.1-8B-Instruct", "gpt-4o-mini"]
+
+AVAILABLE_MODELS = [
+    "gpt-oss-120b", "Meta-Llama-3.1-405B-Instruct", "gpt-4o",
+    "Meta-Llama-3.1-8B-Instruct", "gpt-4o-mini"
+]
 
 app = FastAPI(title="free-dooms_ddkdkdketc")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -27,7 +34,7 @@ class Message(BaseModel):
 class ChatRequest(BaseModel):
     model: Optional[str] = "free-dooms"
     messages: List[Message]
-    max_tokens: Optional[int] = 1024
+    max_tokens: Optional[int] = 2048
     temperature: Optional[float] = 0.7
 
 class KeyGenerateRequest(BaseModel):
@@ -46,25 +53,39 @@ def check_auth(authorization: Optional[str] = Header(None)):
         raise HTTPException(401, {"error": "unknown api key. generate one at /v1/api-keys/generate"})
     return key
 
-# ─── GitHub Models backend (free GPT-4o) ──────────────────
+# ─── Backends ──────────────────────────────────────────────
 
-async def gh_chat(model, messages, max_tokens, temperature):
-    m = model if model in AVAILABLE_MODELS else GH_MODEL
+async def cerebras_chat(model, messages, max_tokens, temperature):
+    m = model if model in ["gpt-oss-120b"] else "gpt-oss-120b"
     body = {
         "model": m,
         "messages": [msg.model_dump() for msg in messages],
         "max_tokens": max_tokens,
         "temperature": temperature
     }
-    async with httpx.AsyncClient(timeout=60) as c:
+    async with httpx.AsyncClient(timeout=120) as c:
+        r = await c.post(f"{CEREBRAS_BASE}/chat/completions", json=body,
+            headers={"Authorization": f"Bearer {CEREBRAS_KEY}", "Content-Type": "application/json"})
+    if r.status_code != 200:
+        return None
+    data = r.json()
+    return data["choices"][0]["message"]["content"]
+
+async def gh_chat(model, messages, max_tokens, temperature):
+    m = model if model in AVAILABLE_MODELS and model != "gpt-oss-120b" else "Meta-Llama-3.1-405B-Instruct"
+    body = {
+        "model": m,
+        "messages": [msg.model_dump() for msg in messages],
+        "max_tokens": max_tokens,
+        "temperature": temperature
+    }
+    async with httpx.AsyncClient(timeout=120) as c:
         r = await c.post(f"{GH_BASE}/chat/completions", json=body,
             headers={"Authorization": f"Bearer {GH_TOKEN}", "Content-Type": "application/json"})
     if r.status_code != 200:
         return None
     data = r.json()
     return data["choices"][0]["message"]["content"]
-
-BACKENDS = [gh_chat]
 
 # ─── Endpoints ─────────────────────────────────────────────
 
@@ -86,28 +107,42 @@ async def delete_key(key: str):
 
 @app.get("/v1/models")
 async def list_models():
-    return {"object": "list", "data": [{"id": m, "object": "model", "owned_by": "github/freedooms"} for m in AVAILABLE_MODELS]}
+    return {"object": "list", "data": [{"id": m, "object": "model", "owned_by": "freedooms"} for m in AVAILABLE_MODELS]}
 
 @app.post("/v1/chat/completions")
 async def chat_completions(req: ChatRequest, authorization: Optional[str] = Header(None)):
     check_auth(authorization)
-    for backend in BACKENDS:
-        text = await backend(req.model, req.messages, req.max_tokens, req.temperature)
+    model = req.model if req.model and req.model in AVAILABLE_MODELS else "gpt-oss-120b"
+
+    # Try Cerebras first for gpt-oss-120b, then fallback
+    if model == "gpt-oss-120b":
+        text = await cerebras_chat(model, req.messages, req.max_tokens, req.temperature)
         if text:
             return {
                 "id": f"chatcmpl-{secrets.token_hex(6)}",
-                "object": "chat.completion",
-                "created": int(time.time()),
-                "model": req.model or "free-dooms",
+                "object": "chat.completion", "created": int(time.time()),
+                "model": model,
                 "choices": [{"index": 0, "message": {"role": "assistant", "content": text.strip()}, "finish_reason": "stop"}],
                 "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
             }
-    raise HTTPException(503, {"error": "backend unavailable."})
+
+    text = await gh_chat(model, req.messages, req.max_tokens, req.temperature)
+    if text:
+        return {
+            "id": f"chatcmpl-{secrets.token_hex(6)}",
+            "object": "chat.completion", "created": int(time.time()),
+            "model": model,
+            "choices": [{"index": 0, "message": {"role": "assistant", "content": text.strip()}, "finish_reason": "stop"}],
+            "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+        }
+
+    raise HTTPException(503, {"error": "all backends exhausted."})
 
 if __name__ == "__main__":
     print("╔══════════════════════════════════════════════╗")
     print("║      free-dooms_ddkdkdketc API v1           ║")
     print("╠══════════════════════════════════════════════╣")
-    print(f"║  ✓ GitHub Models backend (free GPT-4o)     ║")
+    print("║  ✓ Cerebras: gpt-oss-120b                   ║")
+    print("║  ✓ GitHub Models: Llama 405B, GPT-4o       ║")
     print("╚══════════════════════════════════════════════╝")
     uvicorn.run(app, host="0.0.0.0", port=7860)
