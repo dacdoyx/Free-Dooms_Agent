@@ -69,7 +69,8 @@ async def cerebras_chat(model, messages, max_tokens, temperature):
     if r.status_code != 200:
         return None
     data = r.json()
-    return data["choices"][0]["message"]["content"]
+    msg = data["choices"][0]["message"]
+    return msg.get("content") or msg.get("reasoning") or ""
 
 async def gh_chat(model, messages, max_tokens, temperature):
     m = model if model in AVAILABLE_MODELS and model != "gpt-oss-120b" else "Meta-Llama-3.1-405B-Instruct"
