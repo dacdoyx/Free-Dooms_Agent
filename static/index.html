@@ -201,6 +201,13 @@ body::before {
   flex-direction: column;
   gap: 16px;
 }
+.main.empty .messages {
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 80px;
+}
+.main.empty .messages > *:not(.empty-state) { display: none; }
+.main.empty .empty-state { display: flex !important; }
 
 /* ─── Message Card with Glow ─── */
 .msg-card {
@@ -679,6 +686,8 @@ function toggleTheme() {
 }
 
 // Load saved theme
+document.querySelector('.main')?.classList.add('empty');
+
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme === 'light') {
   document.getElementById('darkToggle').checked = false;
@@ -792,6 +801,7 @@ function typeMessage(text) {
 
 // ─── Add Message ───
 function addMessage(role, content) {
+  document.querySelector('.main')?.classList.remove('empty');
   document.getElementById('emptyState')?.remove();
   document.getElementById('typingContent')?.parentElement?.classList.remove('glowing');
 
@@ -832,6 +842,7 @@ function clearChat() {
   messagesEl.innerHTML = '';
   messagesEl.appendChild(emptyState);
   emptyState.style.display = 'flex';
+  document.querySelector('.main')?.classList.add('empty');
 }
 
 function handleKey(e) {
