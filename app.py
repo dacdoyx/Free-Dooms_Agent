@@ -16,7 +16,7 @@ GH_TOKEN = os.environ.get("GH_MODELS_TOKEN", "")
 GH_BASE = "https://models.inference.ai.azure.com"
 
 AVAILABLE_MODELS = [
-    "gpt-oss-120b", "Meta-Llama-3.1-405B-Instruct", "gpt-4o",
+    "Meta-Llama-3.1-405B-Instruct", "gpt-oss-120b", "gpt-4o",
     "Meta-Llama-3.1-8B-Instruct", "gpt-4o-mini"
 ]
 
@@ -113,9 +113,9 @@ async def list_models():
 @app.post("/v1/chat/completions")
 async def chat_completions(req: ChatRequest, authorization: Optional[str] = Header(None)):
     check_auth(authorization)
-    model = req.model if req.model and req.model in AVAILABLE_MODELS else "gpt-oss-120b"
+    model = req.model if req.model and req.model in AVAILABLE_MODELS else "Meta-Llama-3.1-405B-Instruct"
 
-    # Try Cerebras first for gpt-oss-120b, then fallback
+    # Try Cerebras for gpt-oss-120b if requested
     if model == "gpt-oss-120b":
         text = await cerebras_chat(model, req.messages, req.max_tokens, req.temperature)
         if text:
