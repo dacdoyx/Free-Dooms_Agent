@@ -71,9 +71,19 @@
     </div>
   </div>
 
+  <div class="key-section">
+    <label>Model</label>
+    <select id="modelSelect" style="width:100%;background:#1a1a1a;color:#e8e8e8;border:1px solid #333;border-radius:4px;padding:6px;margin-top:4px;font-size:12px;">
+      <option value="Meta-Llama-3.1-405B-Instruct">Llama 3.1 405B (powerful)</option>
+      <option value="gpt-4o">GPT-4o</option>
+      <option value="gpt-4o-mini">GPT-4o Mini (fast)</option>
+      <option value="Meta-Llama-3.1-8B-Instruct">Llama 3.1 8B</option>
+    </select>
+  </div>
+
   <div class="stats">
     <a href="https://github.com/dacdoyx/Free-Dooms_Agent" target="_blank">GitHub</a>
-    &middot; Powered by Gemini 2.5 Flash
+    &middot; Free GPT-4o &amp; Llama
   </div>
 </div>
 
@@ -146,6 +156,7 @@ async function sendMessage() {
   input.style.height = 'auto';
   sendBtn.disabled = true;
 
+  const model = document.getElementById('modelSelect').value;
   const msgs = [...document.querySelectorAll('.msg.user, .msg.assistant')].map(el => ({
     role: el.dataset.role,
     content: el.dataset.content
@@ -155,7 +166,7 @@ async function sendMessage() {
     const res = await fetch(`${API_BASE}/v1/chat/completions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
-      body: JSON.stringify({ messages: msgs })
+      body: JSON.stringify({ model: model, messages: msgs })
     });
     const data = await res.json();
     if (data.choices) {

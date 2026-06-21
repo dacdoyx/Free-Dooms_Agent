@@ -9,8 +9,9 @@ from typing import List, Optional
 VALID_KEYS = {}
 
 GH_TOKEN = os.environ.get("GH_MODELS_TOKEN", "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")
-GH_MODEL = "gpt-4o-mini"
+GH_MODEL = "Meta-Llama-3.1-405B-Instruct"
 GH_BASE = "https://models.inference.ai.azure.com"
+AVAILABLE_MODELS = ["Meta-Llama-3.1-405B-Instruct", "gpt-4o", "Meta-Llama-3.1-8B-Instruct", "gpt-4o-mini"]
 
 app = FastAPI(title="free-dooms_ddkdkdketc")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -47,10 +48,11 @@ def check_auth(authorization: Optional[str] = Header(None)):
 
 # ─── GitHub Models backend (free GPT-4o) ──────────────────
 
-async def gh_chat(messages, max_tokens, temperature):
+async def gh_chat(model, messages, max_tokens, temperature):
+    m = model if model in AVAILABLE_MODELS else GH_MODEL
     body = {
-        "model": GH_MODEL,
-        "messages": [m.model_dump() for m in messages],
+        "model": m,
+        "messages": [msg.model_dump() for msg in messages],
         "max_tokens": max_tokens,
         "temperature": temperature
     }
@@ -84,13 +86,13 @@ async def delete_key(key: str):
 
 @app.get("/v1/models")
 async def list_models():
-    return {"object": "list", "data": [{"id": GH_MODEL, "object": "model", "owned_by": "github/freedooms"}]}
+    return {"object": "list", "data": [{"id": m, "object": "model", "owned_by": "github/freedooms"} for m in AVAILABLE_MODELS]}
 
 @app.post("/v1/chat/completions")
 async def chat_completions(req: ChatRequest, authorization: Optional[str] = Header(None)):
     check_auth(authorization)
     for backend in BACKENDS:
-        text = await backend(req.messages, req.max_tokens, req.temperature)
+        text = await backend(req.model, req.messages, req.max_tokens, req.temperature)
         if text:
             return {
                 "id": f"chatcmpl-{secrets.token_hex(6)}",
