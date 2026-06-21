@@ -204,10 +204,8 @@ body::before {
 .main.empty .messages {
   justify-content: center;
   align-items: center;
-  padding-bottom: 80px;
+  padding-bottom: 60px;
 }
-.main.empty .messages > *:not(.empty-state) { display: none; }
-.main.empty .empty-state { display: flex !important; }
 
 /* ─── Message Card with Glow ─── */
 .msg-card {
@@ -752,6 +750,7 @@ async function sendMessage() {
 
 // ─── Thinking Animation ───
 function showThinking() {
+  document.querySelector('.main')?.classList.remove('empty');
   document.getElementById('emptyState')?.remove();
   const div = document.createElement('div');
   div.className = 'thinking-indicator';
@@ -830,6 +829,7 @@ function addMessage(role, content) {
 }
 
 function addSystemMsg(text) {
+  document.querySelector('.main')?.classList.remove('empty');
   document.getElementById('emptyState')?.remove();
   const div = document.createElement('div');
   div.className = 'msg-card system';
