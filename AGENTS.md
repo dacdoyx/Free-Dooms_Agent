@@ -20,11 +20,18 @@ Build a free LLM chat API + web UI that routes to multiple free backends.
 - ✅ One API key works across all models
 - ✅ Model selection, file upload, token tracking, settings
 - ✅ Responsive UI — desktop, tablet (768px), mobile (480px) breakpoints
+- ✅ Status badge id fixed (was using wrong id `brand-sub` instead of `statusBadge`)
 - ✅ Deployed on HF Space + GitHub
-- ⏳ PR for `freedooms.is-a.dev` → https://github.com/is-a-dev/register/pull/41533
+- ⏳ PR for `freedooms.is-a.dev` → https://github.com/is-a-dev/register/pull/41533 (CI passing, waiting merge)
 - ❌ Custom domain requires HF Pro ($9/mo)
 - ❌ **Not** for commercial resale — uses free tier APIs (GitHub Models, Cerebras) which forbid reselling
 - ❌ No finetune, RAG, or vector DB — pure proxy/gateway
+
+## LTX-2 Video Generation
+- Repo: `dacdoyx/LTX-2-clone` (fork of Lightricks LTX-2, 22B DiT audio-video model)
+- **Cannot run locally** — no GPU available on this machine
+- **HF Spaces** — `dacdoyx13/Free-Dooms` is CPU basic only, no GPU. HF GPU requires Pro.
+- Free GPU alternatives: Google Colab (T4), Kaggle (T4, 30hr/wk), RunPod (paid ~$0.3/hr)
 
 ## Usage
 - User generates API key from Settings → Generate Key
