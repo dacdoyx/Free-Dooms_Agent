@@ -19,7 +19,10 @@ Build a free LLM chat API + web UI that routes to multiple free backends.
 - ✅ Glassmorphic UI connected to real API backend
 - ✅ One API key works across all models
 - ✅ Model selection, file upload, token tracking, settings
+- ✅ Responsive UI — desktop, tablet (768px), mobile (480px) breakpoints
 - ✅ Deployed on HF Space + GitHub
+- ⏳ PR for `freedooms.is-a.dev` → https://github.com/is-a-dev/register/pull/41533
+- ❌ Custom domain requires HF Pro ($9/mo)
 - ❌ **Not** for commercial resale — uses free tier APIs (GitHub Models, Cerebras) which forbid reselling
 - ❌ No finetune, RAG, or vector DB — pure proxy/gateway
 
